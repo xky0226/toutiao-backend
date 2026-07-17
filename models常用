@@ -1,0 +1,114 @@
+primary_key — 主键
+
+  唯一标识表中每一行记录，不能重复、不能为空。
+
+  id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+  一个表通常只有一个主键（或一组复合主键），数据库会自动为其建立索引，查询最快。
+
+  对应 SQL： PRIMARY KEY (id)
+
+  ---
+  autoincrement — 自增
+
+  插入新记录时自动 +1，不需要手动传值。
+
+  id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+  第一次插入 id=1，第二次 id=2，以此类推。通常只和 primary_key 配合使用。
+
+  对应 SQL： AUTO_INCREMENT
+
+  ---
+  unique — 唯一约束
+
+  这一列的值不能重复。
+
+  username: Mapped[str] = mapped_column(String(50), unique=True)
+
+  ┌──────────┬────────┬─────────┐
+  │ 表里已有 │ 再插入 │  结果   │
+  ├──────────┼────────┼─────────┤
+  │ admin    │ admin  │ 报错 ❌ │
+  ├──────────┼────────┼─────────┤
+  │ admin    │ user2  │ 成功 ✅ │
+  └──────────┴────────┴─────────┘
+
+  对应 SQL： UNIQUE INDEX 或 UNIQUE KEY
+
+  ---
+  nullable — 是否允许为空
+
+  # NOT NULL — 必须传值
+  username: Mapped[str] = mapped_column(String(50), nullable=False)
+
+  # NULL — 可以不传
+  avatar: Mapped[Optional[str]] = mapped_column(String(255))  # nullable 默认为 True
+
+  ┌──────────────────┬────────────────┬───────────────┐
+  │       场景       │ nullable=False │ nullable=True │
+  ├──────────────────┼────────────────┼───────────────┤
+  │ 插入时不传该字段 │ 报错 ❌        │ 存 NULL ✅    │
+  ├──────────────────┼────────────────┼───────────────┤
+  │ 适用于           │ 必填字段       │ 可选字段      │
+  └──────────────────┴────────────────┴───────────────┘
+
+  对应 SQL： NOT NULL / NULL
+
+  ---
+  default — 默认值
+
+  gender: Mapped[Optional[str]] = mapped_column(String(10), default="unknown")
+
+  插入时如果不传，自动用 "unknown"。
+
+  对应 SQL： DEFAULT 'unknown'
+
+  ---
+  ForeignKey — 外键
+
+  引用另一张表的字段，保证数据完整性。
+
+  user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+
+  表示这个字段的值必须在 user 表的 id 列里存在。
+
+  ┌─────────────────────────────────┬─────────┐
+  │              场景               │  结果   │
+  ├─────────────────────────────────┼─────────┤
+  │ user_id=1，user 表有 id=1       │ ✅      │
+  ├─────────────────────────────────┼─────────┤
+  │ user_id=999，user 表没有 id=999 │ ❌ 报错 │
+  └─────────────────────────────────┴─────────┘
+
+  对应 SQL： FOREIGN KEY (user_id) REFERENCES user(id)
+
+  ---
+  comment — 注释
+
+  给字段加说明，方便看数据库的人理解。
+
+  id: Mapped[int] = mapped_column(Integer, primary_key=True, comment="用户ID")
+
+  对应 SQL： COMMENT '用户ID'
+
+  ---
+  一张表总结
+
+  ┌───────────────┬────────────┬───────────────────────────┐
+  │     参数      │    作用    │        能否同时用         │
+  ├───────────────┼────────────┼───────────────────────────┤
+  │ primary_key   │ 主键       │ 可以和 autoincrement 配合 │
+  ├───────────────┼────────────┼───────────────────────────┤
+  │ autoincrement │ 自动递增   │ 通常和 primary_key 配合   │
+  ├───────────────┼────────────┼───────────────────────────┤
+  │ unique        │ 不能重复   │ 可以和 nullable 配合      │
+  ├───────────────┼────────────┼───────────────────────────┤
+  │ nullable      │ 允许为空   │ 可以和所有搭配            │
+  ├───────────────┼────────────┼───────────────────────────┤
+  │ default       │ 默认值     │ 不和 autoincrement 混用   │
+  ├───────────────┼────────────┼───────────────────────────┤
+  │ ForeignKey    │ 引用其他表 │ 独立的约束                │
+  ├───────────────┼────────────┼───────────────────────────┤
+  │ comment       │ 注释       │ 不影响功能                │
+  └───────────────┴────────────┴───────────────────────────┘
