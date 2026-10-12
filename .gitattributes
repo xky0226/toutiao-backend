@@ -1,0 +1,9 @@
+# 仓库里统一存 LF，检出时按平台转换。
+* text=auto
+
+*.py   text diff=python
+*.md   text
+*.json text
+
+*.png  binary
+*.jpg  binary
